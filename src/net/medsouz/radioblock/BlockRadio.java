@@ -2,13 +2,21 @@ package net.medsouz.radioblock;
 
 import net.medsouz.radioblock.player.MP3Player;
 import net.minecraft.block.Block;
+import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IconRegister;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.MathHelper;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
-public class BlockRadio extends Block{
+public class BlockRadio extends Block implements ITileEntityProvider{
 
 	public BlockRadio(int par1, Material par2Material) {
 		super(par1, par2Material);
@@ -23,32 +31,77 @@ public class BlockRadio extends Block{
 	public void registerIcons(IconRegister ir){
 		blockIcon = ir.registerIcon("radioblock:radio");
 	}
-
-	private boolean debounce = false;
 	
 	@Override
 	public boolean onBlockActivated(World par1World, int par2, int par3, int par4, EntityPlayer par5EntityPlayer, int par6, float par7, float par8, float par9){
 		if(par1World.isRemote){//only run on the clients, the server admins might get scared if their servers start blasting music
-			if(!debounce){
-				debounce = true;
-				System.out.println("The block at "+par2+", "+par3+", "+par4+" was right clicked "+par6);
-				//TODO: Stream GUI
-				if(ModRadioBlock.currentPlayer != null && ModRadioBlock.currentPlayer.isPlaying()){
-					ModRadioBlock.currentPlayer.stop();
-				}else{
-					ModRadioBlock.currentPlayer = new MP3Player("http://listen.radiohyrule.com:8000/listen");
-				}
+			System.out.println("The block at "+par2+", "+par3+", "+par4+" was right clicked "+par6);
+			TileEntityRadio ter = (TileEntityRadio) par1World.getBlockTileEntity(par2, par3, par4);
+			//TODO: Stream GUI
+			if(ter.isPlaying()){
+				ter.stopStream();
+			}else{
+				ter.startStream();
 			}
+			System.out.println("Time Created: "+ter.createdTime);
 		}
-		debounce = false;
 		return true;
 	}
 	
 	@Override
-	public void breakBlock(World par1World, int par2, int par3, int par4, int par5, int par6){
-		if(ModRadioBlock.currentPlayer != null){
-			ModRadioBlock.currentPlayer.stop();
-		}	
+	public TileEntity createNewTileEntity(World world){
+		return new TileEntityRadio();
+	}
+	
+	@Override
+	public boolean renderAsNormalBlock(){
+		return false;
+	}
+	
+	@Override
+	public boolean isOpaqueCube(){
+		return false;
+		
+	}
+	
+	@Override
+    public int getRenderType()
+    {
+        return 189;
+    }
+	
+	@Override
+	public AxisAlignedBB getSelectedBoundingBoxFromPool(World par1World, int par2, int par3, int par4)
+	{
+		setBlockBoundsBasedOnState(par1World, par2, par3, par4);
+        return super.getSelectedBoundingBoxFromPool(par1World, par2, par3, par4);
+	}
+	
+	@Override
+	public void setBlockBoundsBasedOnState(IBlockAccess par1IBlockAccess, int par2, int par3, int par4)
+	{
+		switch(par1IBlockAccess.getBlockTileEntity(par2, par3, par4).getBlockMetadata()){
+			default:
+				setBlockBounds(0.0F, 0.0F, 0.4F, 1.0F, 0.5F, 0.7F);
+				break;
+			case 1:
+				setBlockBounds(0.4F, 0.5F, 0.0F, 0.7F, 0.0F, 1.0F);
+				break;
+			case 2:
+				setBlockBounds(0.0F, 0.0F, 0.4F, 1.0F, 0.5F, 0.7F);
+				break;
+			case 3:
+				setBlockBounds(0.4F, 0.5F, 0.0F, 0.7F, 0.0F, 1.0F);
+				break;
+		}
+		
+	}
+	
+	@Override
+	public void onBlockPlacedBy(World par1World, int par2, int par3, int par4, EntityLiving par5EntityLiving, ItemStack par6ItemStack){
+		int dir = MathHelper.floor_double((double)(par5EntityLiving.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
+		par1World.getBlockTileEntity(par2, par3, par4).blockMetadata = dir;
+		System.out.println(dir);
 	}
 
 }

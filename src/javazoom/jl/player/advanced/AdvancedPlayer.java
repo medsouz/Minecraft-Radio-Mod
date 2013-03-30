@@ -49,6 +49,7 @@ public class AdvancedPlayer
 	private int lastPosition = 0;
 	/** Listener for the playback process */
 	private PlaybackListener listener;
+	private float volume = 1f;
 
 	/**
 	 * Creates a new <code>Player</code> instance.
@@ -160,7 +161,11 @@ public class AdvancedPlayer
 				out = audio;
 				if(out != null)
 				{
-					out.write(output.getBuffer(), 0, output.getBufferLength());
+					short[] samples = output.getBuffer();
+					for(int samp = 0; samp < samples.length; samp++){
+						samples[samp] = (short) (samples[samp] * volume);
+					}
+					out.write(samples, 0, output.getBufferLength());
 				}
 			}
 
@@ -238,5 +243,13 @@ public class AdvancedPlayer
 	{
 		listener.playbackFinished(createEvent(PlaybackEvent.STOPPED));
 		close();
+	}
+	
+	public void setVolume(float f){
+		volume = f;
+	}
+	
+	public float getVolume(){
+		return volume;
 	}
 }

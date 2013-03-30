@@ -14,7 +14,6 @@ public class MP3Player extends PlaybackListener implements Runnable{
 	private String streamURL;
 	private AdvancedPlayer player;
 	private Thread pThread;
-	private boolean isPlaying = false;
 	
 	public MP3Player(String mp3url){
 		try {
@@ -29,20 +28,10 @@ public class MP3Player extends PlaybackListener implements Runnable{
 	@Override
 	public void run() {
 		try {
-			playStream();
-		} catch (JavaLayerException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	private void playStream() throws JavaLayerException{
-		try{
-			isPlaying = true;
 			player = new AdvancedPlayer(new URL(streamURL).openStream());
 			player.setPlayBackListener(this);
 			player.play();
-			isPlaying = false;
-		}catch(Exception e){
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -62,6 +51,16 @@ public class MP3Player extends PlaybackListener implements Runnable{
 	}
 
 	public boolean isPlaying() {
-		return isPlaying;
+		return pThread.isAlive();
+	}
+	
+	public void setVolume(float f){
+		if(player != null){
+			player.setVolume(f);
+		}
+	}
+	
+	public float getVolume(){
+		return player.getVolume();
 	}
 }
