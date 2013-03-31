@@ -1,5 +1,8 @@
 package net.medsouz.radioblock;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +14,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.packet.Packet250CustomPayload;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.Init;
 import cpw.mods.fml.common.Mod.Instance;
@@ -46,7 +50,7 @@ public class ModRadioBlock {
 	
 	@ServerStopped
 	public void serverStop(FMLServerStoppedEvent event) {
-		System.out.println("Stopped!");
+		//System.out.println("Stopped!");
 		killAllStreams();
 	}
 	
@@ -54,5 +58,25 @@ public class ModRadioBlock {
 		for(MP3Player p : playerList){
 			p.stop();
 		}
+	}
+	
+	public static Packet250CustomPayload setPacket(int x, int y, int z, String streamURL, boolean playing){
+		Packet250CustomPayload p = new Packet250CustomPayload();
+		p.channel = "RadioBlock";
+		ByteArrayOutputStream baos = new ByteArrayOutputStream(8);
+		DataOutputStream dos = new DataOutputStream(baos);
+		try {
+			dos.writeInt(0x01);//0x01 will identify this as setting the stream
+			dos.writeInt(x);
+			dos.writeInt(y);
+			dos.writeInt(z);
+			dos.writeUTF(streamURL);
+			dos.writeBoolean(playing);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		p.length = baos.toByteArray().length;
+		p.data = baos.toByteArray();
+		return p;
 	}
 }

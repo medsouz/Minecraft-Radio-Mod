@@ -43,11 +43,11 @@ public class MP3Player extends PlaybackListener implements Runnable{
 	}
 	
 	public void playbackStarted(PlaybackEvent evt){
-		System.out.println("Started playing...");
+		//System.out.println("Started playing...");
 	}
 	
 	public void playbackFinished(PlaybackEvent evt){
-		System.out.println("Stopped playing!");
+		//System.out.println("Stopped playing!");
 	}
 
 	public boolean isPlaying() {

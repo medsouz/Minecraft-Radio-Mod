@@ -8,6 +8,10 @@ import java.net.URLConnection;
 
 import org.lwjgl.input.Keyboard;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
@@ -71,18 +75,19 @@ public class GuiRadio extends GuiScreen{
 		super.mouseClicked(par1, par2, par3);
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
 	 protected void actionPerformed(GuiButton par1GuiButton){
 		if(par1GuiButton.id == 0){
 			System.out.println(radio.isPlaying());
-			if(radio.isPlaying()){
+			/*if(radio.isPlaying()){
 				radio.stopStream();
 			}else{
 				radio.startStream();
-			}
+			}*/
+			Minecraft.getMinecraft().thePlayer.sendQueue.addToSendQueue(ModRadioBlock.setPacket(radio.xCoord, radio.yCoord, radio.zCoord, radio.streamURL, !radio.isPlaying()));
 		}
 		if(par1GuiButton.id == 1){
-			//TODO: m3u parsing
 			if(streamTextBox.getText().toLowerCase().endsWith(".m3u")){
 				radio.streamURL = takeFirstEntryFromM3U(streamTextBox.getText());
 			}else if(streamTextBox.getText().toLowerCase().endsWith(".pls")){
@@ -90,7 +95,9 @@ public class GuiRadio extends GuiScreen{
 			}else{
 				radio.streamURL = streamTextBox.getText();
 			}
+			Minecraft.getMinecraft().thePlayer.sendQueue.addToSendQueue(ModRadioBlock.setPacket(radio.xCoord, radio.yCoord, radio.zCoord, radio.streamURL, radio.isPlaying()));
 			//TODO: asx format http://en.wikipedia.org/wiki/Advanced_Stream_Redirector
+			//TODO: XSPF format(or not, doesnt seem too popular): http://en.wikipedia.org/wiki/XSPF
 		}
 	}
 	
@@ -113,7 +120,6 @@ public class GuiRadio extends GuiScreen{
 			}
 			out = mp3;
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return out;
@@ -130,12 +136,10 @@ public class GuiRadio extends GuiScreen{
 				String f = mp3.trim();
 				if(f.contains("http://")){//yes I am cheating here, go home
 					out = f.substring(f.indexOf("http://"));
-					System.out.println(out);
 					break;
 				}
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return out;

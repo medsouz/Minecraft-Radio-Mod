@@ -12,7 +12,7 @@ public class ClientProxy extends CommonProxy{
 	
 	@Override
 	public void initTileEntities(){
-		System.out.println("registering renderer");
+		//System.out.println("registering renderer");
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityRadio.class, new RenderRadioBlock());
 	}
 }

@@ -1,5 +1,6 @@
 package net.medsouz.radioblock;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.medsouz.radioblock.player.MP3Player;
@@ -35,16 +36,19 @@ public class BlockRadio extends Block implements ITileEntityProvider{
 		blockIcon = ir.registerIcon("radioblock:radio");
 	}
 	
-	@SideOnly(Side.CLIENT)
 	@Override
 	public boolean onBlockActivated(World par1World, int par2, int par3, int par4, EntityPlayer par5EntityPlayer, int par6, float par7, float par8, float par9){
-		if(par1World.isRemote){//only run on the clients, the server admins might get scared if their servers start blasting music
-			//System.out.println("The block at "+par2+", "+par3+", "+par4+" was right clicked "+par6);
-			TileEntityRadio ter = (TileEntityRadio) par1World.getBlockTileEntity(par2, par3, par4);
-			//TODO: Stream GUI
-			Minecraft.getMinecraft().displayGuiScreen(new GuiRadio(ter));
+		Side side = FMLCommonHandler.instance().getEffectiveSide();
+		if(side == Side.CLIENT){
+			openGUI(par1World, par2, par3, par4);
 		}
 		return true;
+	}
+	
+	@SideOnly(Side.CLIENT)
+	private void openGUI(World par1World, int par2, int par3, int par4){
+		TileEntityRadio ter = (TileEntityRadio) par1World.getBlockTileEntity(par2, par3, par4);
+		Minecraft.getMinecraft().displayGuiScreen(new GuiRadio(ter));
 	}
 	
 	@Override
